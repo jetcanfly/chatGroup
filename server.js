@@ -29,7 +29,6 @@ mongoose.connect(configDB.url);
 // separate passport configuration into a rather dependent module.
 require('./config/passport.js')(passport);
 
-
 // 设置一下基本模块
 app.use(cookieParser()); 		// 自动解析cookie
 app.use(bodyParser()); 			// 解析request body
@@ -43,9 +42,9 @@ var sessionMiddleware = session({
 	})
 });
 
-app.use(sessionMiddleware);						
-app.use(passport.initialize());	   	
-app.use(passport.session());	    
+app.use(sessionMiddleware);
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(flash()); 		            // connect-flash 使用存储在session中的flash.
 
 // pass app and passport to the routes 
