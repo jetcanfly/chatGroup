@@ -1,0 +1,50 @@
+body{
+    padding: 0;
+}
+#registerScreen{
+    display: block;
+    width: 400px;
+    height: 400px;
+    margin: 0 auto;
+    margin-top: 10%;
+    border: 1px solid #000;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 8px 6px 6px #cccddd; 
+}
+#top, #bottom{
+    font-family: 'Helvetica', cursive;
+}
+#bottom{
+    margin-top: 20%;
+    width: 100%;
+    text-align: center;
+}
+#user, #pass{
+    font-family: 'Helvetica', sans-serif;
+    font-size: 18px;
+    display: block;
+    margin-top: 5%;
+}
+#myname{
+    font-family: 'Helvetica', sans-serif;
+    font-size: 12px;
+}
+#enter{
+    margin-top: 5%;
+    font-size: 28px;
+    font-family: 'Helvetica', sans-serif;
+}
+button{
+    margin-top: 25px;
+    padding: 4px 5px 4px 5px;
+    border-radius: 6px;
+    border: 1px solid #000;
+}
+a{
+    text-decoration: none;
+    color: #eaaabe;
+}
+.alert{
+    color: #b91919;
+}

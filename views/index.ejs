@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, height=device-height, initial-scale=1"
+    />
+    <title>chatGroup</title>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script
+      type="text/javascript"
+      src="https://code.jquery.com/jquery-1.11.1.js"
+    ></script>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <div id="optionsBar">
+      <div id="people">
+        <h2 id="userGreeting">hello, <%= user.local.username %></h2>
+        <h3>currently online:</h3>
+        <ol id="userList">
+          <!-- list the users -->
+        </ol>
+      </div>
+
+      <hr />
+
+      <div id="reactionASCII">
+        <!-- send a pic -->
+        <div id="sendPic">
+          <h3>send picture</h3>
+          <input id="fileInput" style="display:none;" type="file" />
+          <button onclick="fileHandler()">select picture</button>
+        </div>
+        <hr />
+        <p>
+          <a id="logout" href="/logout" onclick="userDisconnect()"> logout? </a>
+        </p>
+      </div>
+    </div>
+
+    <div id="chatbox">
+      <div id="display">
+        <ul id="messages"></ul>
+      </div>
+      <hr />
+      <div id="sendMsg">
+        <form action="">
+          <input id="m" autocomplete="off" placeholder="enter a message..." />
+          <button>Send</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      var socket = io();
+      var thisUsername;
+
+      $(function() {
+        // tell the server the username of this user that just connected
+        var greeting = $("#userGreeting").text();
+        var username = greeting.substring(greeting.indexOf(",") + 1).trim();
+        socket.emit("userConnected", username);
+
+        thisUsername = username; // keep this info for use when logging out
+
+        // then get all the current users from server and list them
+        socket.on("getCurrentUsers", function(userList) {
+          // empty user list first before updating
+          $("#userList").empty();
+          var list = document.getElementById("userList");
+          for (var i = 0; i < userList.length; i++) {
+            var user = document.createElement("li");
+            user.textContent = userList[i];
+            list.appendChild(user);
+          }
+        });
+
+        $("form").submit(function() {
+          // send the message to the server, which will then send this message to all clients
+          socket.emit("chat message", { user: username, msg: $("#m").val() });
+          $("#m").val("");
+          return false;
+        });
+        socket.on("chat message", function(msg) {
+          // this is the client part. when you receive a message from the server, display it.
+          $("#messages").append($("<li>").text(msg));
+        });
+        socket.on("image", function(imgData) {
+          // this is where client handles imgData sent from the server
+          var img = new Image();
+          img.src = imgData.img;
+
+          var canvas = document.createElement("canvas");
+          canvas.setAttribute("width", "200px");
+          canvas.setAttribute("height", "200px");
+
+          img.onload = function() {
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, 200, 200);
+          };
+
+          var newListElement = document.createElement("li");
+          var timestamp = new Date().toLocaleString();
+
+          // also include username of user who sent it
+          var user = document.createElement("span");
+          user.textContent = imgData.user + ": ";
+          newListElement.appendChild(user);
+
+          newListElement.appendChild(canvas);
+          var date = document.createElement("span");
+          date.textContent = timestamp;
+
+          newListElement.appendChild(date);
+          $("#messages").append(newListElement);
+        });
+      });
+
+      function userDisconnect() {
+        // tell the server that a user has disconnected and update current users list
+        socket.emit("userHasDisconnected", thisUsername);
+      }
+
+      /*
+				import a picture 
+			*/
+      function fileHandler() {
+        //initiate file choosing after button click
+        var input = document.getElementById("fileInput");
+        input.addEventListener("change", getFile, false);
+        input.click();
+      }
+
+      function getFile(e) {
+        var reader = new FileReader();
+        var file = e.target.files[0];
+        var imgData;
+
+        if (!file.type.match(/image.*/)) {
+          console.log("not a valid image");
+          return;
+        }
+        reader.onloadend = function() {
+          imgData = reader.result;
+          var greeting = $("#userGreeting").text();
+          var username = greeting.substring(greeting.indexOf(",") + 1).trim();
+          socket.emit("image", { user: username, img: imgData });
+        };
+        reader.readAsDataURL(file);
+      }
+    </script>
+  </body>
+</html>
